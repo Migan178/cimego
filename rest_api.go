@@ -8,13 +8,20 @@ import (
 	"net/http"
 )
 
+var (
+	ErrBadRequest    = fmt.Errorf("잘못된 요청")
+	ErrUnauthorized  = fmt.Errorf("인증 실패")
+	ErrNotFound      = fmt.Errorf("정보를 찾을 수 없음")
+	ErrInternalError = fmt.Errorf("내부 오류")
+)
+
 type header struct {
 	Authorization string
 	ClientID      string
 	ClientSecret  string
 }
 
-func get(client *http.Client, url string, header *header) (*APIResponseBody, error) {
+func (c *CIME) get(url string, header *header) (*APIResponseBody, error) {
 	r, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
@@ -22,7 +29,7 @@ func get(client *http.Client, url string, header *header) (*APIResponseBody, err
 
 	addHeader(&r.Header, header)
 
-	resp, err := client.Do(r)
+	resp, err := c.apiClient.Do(r)
 	if err != nil {
 		return nil, err
 	}
@@ -41,14 +48,13 @@ func get(client *http.Client, url string, header *header) (*APIResponseBody, err
 	}
 
 	if data.Code != 200 {
-		err = fmt.Errorf("http status code: %d, message: %s", data.Code, *data.Message)
-		return nil, err
+		return nil, returnErr(data)
 	}
 
 	return &data, nil
 }
 
-func post(client *http.Client, url string, body any, header *header) (*APIResponseBody, error) {
+func (c *CIME) post(url string, body any, header *header) (*APIResponseBody, error) {
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
@@ -62,7 +68,7 @@ func post(client *http.Client, url string, body any, header *header) (*APIRespon
 
 	addHeader(&r.Header, header)
 
-	resp, err := client.Do(r)
+	resp, err := c.apiClient.Do(r)
 	if err != nil {
 		return nil, err
 	}
@@ -81,10 +87,26 @@ func post(client *http.Client, url string, body any, header *header) (*APIRespon
 	}
 
 	if data.Code != 200 {
-		err = fmt.Errorf("http Status Code: %d, message: %s", data.Code, *data.Message)
-		return nil, err
+		return nil, returnErr(data)
 	}
+
 	return &data, nil
+}
+
+func returnErr(data APIResponseBody) error {
+	switch data.Code {
+	case 400:
+		return fmt.Errorf("%w: %s", ErrBadRequest, *data.Message)
+	case 401:
+		return fmt.Errorf("%w: %s", ErrUnauthorized, *data.Message)
+	case 404:
+		return fmt.Errorf("%w: %s", ErrNotFound, *data.Message)
+	case 500:
+		return fmt.Errorf("%w: %s", ErrInternalError, *data.Message)
+
+	default:
+		return nil
+	}
 }
 
 func addHeader(h *http.Header, data *header) {
