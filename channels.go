@@ -59,14 +59,6 @@ type ChannelFollower struct {
 // ChannelFollowers는 해당 채널의 팔로워 목록을 가져옵니다.
 // 이는 Access Token을 사용하며, 해당 Access Token은 READ:CHANNEL 스코프가 필요합니다.
 func (c *CIME) ChannelFollowers(ctx context.Context, channelID string, page, size int) ([]ChannelFollower, error) {
-	if page < 0 {
-		page = 0
-	}
-
-	if size <= 0 || size > 20 {
-		size = 20
-	}
-
 	token, err := c.AccessTokens.GetToken(ctx, channelID)
 	if err != nil {
 		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
@@ -119,18 +111,6 @@ type ChannelSubscriber struct {
 // ChannelSubscribers는 채널의 구독자 목록을 가져옵니다.
 // 이는 Access Token을 사용하며, 해당 Access Token은 READ:SUBSCRIPTION 스코프가 필요합니다.
 func (c *CIME) ChannelSubscribers(ctx context.Context, channelID string, page, size int, sort ChannelSubscriberSort) ([]ChannelSubscriber, error) {
-	if page < 0 {
-		page = 0
-	}
-
-	if size <= 0 {
-		size = 30
-	}
-
-	if size > 50 {
-		size = 50
-	}
-
 	token, err := c.AccessTokens.GetToken(ctx, channelID)
 	if err != nil {
 		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
