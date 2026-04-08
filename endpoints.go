@@ -13,4 +13,6 @@ const (
 	EndpointChannelFollowers   = EndpointChannels + "/followers"
 	EndpointChannelSubscribers = EndpointChannels + "/subscribers"
 	EndpointChannelManagers    = EndpointChannels + "/streaming-roles"
+
+	ENdpointLives = APIOpen + "/lives"
 )

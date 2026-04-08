@@ -40,7 +40,7 @@ func (c *CIME) Authorize(ctx context.Context, authorizeCode string) (*AccessToke
 		Code:         authorizeCode,
 	}
 
-	resp, err := c.post(ctx, EndpointAuthorization, payload, nil, nil)
+	resp, err := c.post(ctx, EndpointToken, payload, nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (c *CIME) Refresh(ctx context.Context, channelID string) (*AccessToken, err
 		RefreshToken: oldToken.RefreshToken,
 	}
 
-	resp, err := c.post(ctx, EndpointAuthorization, payload, nil, nil)
+	resp, err := c.post(ctx, EndpointToken, payload, nil, nil)
 	if err != nil {
 		return nil, err
 	}
