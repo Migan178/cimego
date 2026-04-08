@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	ErrLiveListIsEnded = fmt.Errorf("더 이상 다음으로 넘어갈 수 없음")
+	ErrLiveCursorIsEnded = fmt.Errorf("더 이상 다음으로 넘어갈 수 없음")
 )
 
 // LivesCursor는 커서 기반으로 방송 목록을 조작하는 구조체입니다.
@@ -23,7 +23,7 @@ type LivesCursor struct {
 // Next는 다음 커서로 이동합니다.
 func (d *LivesCursor) Next(ctx context.Context) (*LivesCursor, error) {
 	if d.next == nil {
-		return nil, ErrLiveListIsEnded
+		return nil, ErrLiveCursorIsEnded
 	}
 
 	lives, next, err := d.cime.lives(ctx, d.size, *d.next)
