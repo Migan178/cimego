@@ -1,13 +1,13 @@
 package cimego
 
-var (
-	Version = "v1"
-	BaseURL = "https://ci.me/api/openapi/" + Version
+const (
+	APIVersion = "v1"
+	APIBaseURL = "https://ci.me/api/openapi/" + APIVersion
 
-	EndpointAuthorization = BaseURL + "/token"
-	EndpointMe            = BaseURL + "/users/me"
+	EndpointAuthorization = APIBaseURL + "/token"
+	EndpointMe            = APIBaseURL + "/users/me"
 
-	EndpointChannels           = BaseURL + "/channels"
+	EndpointChannels           = APIBaseURL + "/channels"
 	EndpointChannelFollowers   = EndpointChannels + "/followers"
 	EndPointChannelSubscribers = EndpointChannels + "/subscribers"
 )
