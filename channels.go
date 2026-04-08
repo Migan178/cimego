@@ -70,7 +70,7 @@ func (c *CIME) ChannelFollowers(ctx context.Context, channelID string, page, siz
 	token, err := c.AccessTokens.GetToken(ctx, channelID)
 	if err != nil {
 		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
-			err = c.Refresh(ctx, channelID)
+			token, err = c.Refresh(ctx, channelID)
 			if err != nil {
 				return nil, err
 			}
