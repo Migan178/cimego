@@ -97,3 +97,66 @@ func (c *CIME) ChannelFollowers(ctx context.Context, channelID string, page, siz
 
 	return followers, nil
 }
+
+// ChannelSubscriber는 채널의 구독자를 가져올 때 정렬 방식을 선택하는 타입입니다.
+type ChannelSubscriberSort string
+
+const (
+	ChannelSubscriberSortRecent ChannelSubscriberSort = "RECENT"
+	ChannelSubscriberSortLonger ChannelSubscriberSort = "LONGER"
+)
+
+// ChannelSubscriber는 채널의 구독자에 대한 정보를 담고 있는 구조체입니다.
+type ChannelSubscriber struct {
+	ChannelID     string    `json:"channelId"`
+	ChannelName   string    `json:"channelName"`
+	ChannelHandle string    `json:"channelHandle"`
+	Month         int       `json:"month"`
+	TierNo        int       `json:"tierNo"`
+	CreatedDate   time.Time `json:"createdDate"`
+}
+
+func (c *CIME) ChannelSubscribers(ctx context.Context, channelID string, page, size int, sort ChannelSubscriberSort) ([]ChannelSubscriber, error) {
+	if page < 0 {
+		page = 0
+	}
+
+	if size <= 0 {
+		size = 30
+	}
+
+	if size > 50 {
+		size = 50
+	}
+
+	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	if err != nil {
+		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
+			token, err = c.Refresh(ctx, channelID)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return nil, err
+	}
+
+	resp, err := c.get(ctx, EndPointChannelSubscribers, &header{
+		Authorization: token.AccessToken,
+	}, map[string]string{
+		"page": strconv.Itoa(page),
+		"size": strconv.Itoa(size),
+		"sort": string(sort),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var subscribers []ChannelSubscriber
+	err = json.Unmarshal(resp.Content, &subscribers)
+	if err != nil {
+		return nil, err
+	}
+
+	return subscribers, nil
+}

@@ -7,6 +7,7 @@ var (
 	EndpointAuthorization = BaseURL + "/token"
 	EndpointMe            = BaseURL + "/users/me"
 
-	EndpointChannels         = BaseURL + "/channels"
-	EndpointChannelFollowers = EndpointChannels + "/followers"
+	EndpointChannels           = BaseURL + "/channels"
+	EndpointChannelFollowers   = EndpointChannels + "/followers"
+	EndPointChannelSubscribers = EndpointChannels + "/subscribers"
 )
