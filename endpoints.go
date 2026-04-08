@@ -2,12 +2,14 @@ package cimego
 
 const (
 	APIVersion = "v1"
-	APIBaseURL = "https://ci.me/api/openapi/" + APIVersion
+	APIBaseURL = "https://ci.me/api/openapi/"
+	APIOpen    = APIBaseURL + "/open/" + APIVersion
 
-	EndpointAuthorization = APIBaseURL + "/token"
-	EndpointMe            = APIBaseURL + "/users/me"
+	EndpointAuth  = APIBaseURL + "/auth/" + APIBaseURL
+	EndpointToken = EndpointAuth + "/token"
+	EndpointMe    = APIOpen + "/users/me"
 
-	EndpointChannels           = APIBaseURL + "/channels"
+	EndpointChannels           = APIOpen + "/channels"
 	EndpointChannelFollowers   = EndpointChannels + "/followers"
 	EndpointChannelSubscribers = EndpointChannels + "/subscribers"
 	EndpointChannelManagers    = EndpointChannels + "/streaming-roles"
