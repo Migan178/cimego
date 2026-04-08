@@ -116,6 +116,8 @@ type ChannelSubscriber struct {
 	CreatedDate   time.Time `json:"createdDate"`
 }
 
+// ChannelSubscribers는 채널의 구독자 목록을 가져옵니다.
+// 이는 Access Token을 사용하며, 해당 Access Token은 READ:SUBSCRIPTION 스코프가 필요합니다.
 func (c *CIME) ChannelSubscribers(ctx context.Context, channelID string, page, size int, sort ChannelSubscriberSort) ([]ChannelSubscriber, error) {
 	if page < 0 {
 		page = 0
