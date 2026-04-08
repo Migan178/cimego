@@ -143,7 +143,7 @@ func (c *CIME) ChannelSubscribers(ctx context.Context, channelID string, page, s
 		return nil, err
 	}
 
-	resp, err := c.get(ctx, EndPointChannelSubscribers, &header{
+	resp, err := c.get(ctx, EndpointChannelSubscribers, &header{
 		Authorization: token.AccessToken,
 	}, map[string]string{
 		"page": strconv.Itoa(page),
@@ -161,4 +161,54 @@ func (c *CIME) ChannelSubscribers(ctx context.Context, channelID string, page, s
 	}
 
 	return subscribers, nil
+}
+
+// ManagerRole은 채널의 관리자가 어떠한 역할인지에 대한 타입입니다.
+type ManagerRole string
+
+const (
+	ManagerRoleStreamingChannelOwner      ManagerRole = "STREAMING_CHANNEL_OWNER"
+	ManagerRoleStreamingChannelManager    ManagerRole = "STREAMING_CHANNEL_MANAGER"
+	ManagerRoleStreamingChatManager       ManagerRole = "STREAMING_CHAT_MANAGER"
+	ManagerRoleStreamingSettlementManager ManagerRole = "STREAMING_SETTLEMENT_MANAGER"
+)
+
+// ChannelManager는 채널의 관리자에 대한 정보를 담고 있는 구조체입니다.
+type ChannelManager struct {
+	ManagerChannelID     string      `json:"managerChannelId"`
+	ManagerChannelName   string      `json:"managerChannelName"`
+	ManagerChannelHandle string      `json:"managerChannelHandle"`
+	ManagerRole          ManagerRole `json:"userRole"`
+	CreatedDate          time.Time   `json:"createdDate"`
+}
+
+// ChannelManagers는 채널의 관리자 목록을 가져옵니다.
+// 이는 Access Token을 사용하며, 해당 Access Token은 READ:CHANNEL 스코프가 필요합니다.
+func (c *CIME) ChannelManagers(ctx context.Context, channelID string) ([]ChannelManager, error) {
+	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	if err != nil {
+		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
+			token, err = c.Refresh(ctx, channelID)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return nil, err
+	}
+
+	resp, err := c.get(ctx, EndpointChannelManagers, &header{
+		Authorization: token.AccessToken,
+	}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var managers []ChannelManager
+	err = json.Unmarshal(resp.Content, &managers)
+	if err != nil {
+		return nil, err
+	}
+
+	return managers, nil
 }

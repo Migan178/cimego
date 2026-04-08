@@ -9,5 +9,6 @@ const (
 
 	EndpointChannels           = APIBaseURL + "/channels"
 	EndpointChannelFollowers   = EndpointChannels + "/followers"
-	EndPointChannelSubscribers = EndpointChannels + "/subscribers"
+	EndpointChannelSubscribers = EndpointChannels + "/subscribers"
+	EndpointChannelManagers    = EndpointChannels + "/streaming-roles"
 )
