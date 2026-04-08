@@ -2,6 +2,7 @@ package cimego
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -16,14 +17,21 @@ var (
 	ErrInternalError = fmt.Errorf("내부 오류")
 )
 
+// ApiResponseBody는 ci.me의 API에서 반환되는 반환 구조체입니다.
+type APIResponseBody struct {
+	Code    int             `json:"code"`
+	Message *string         `json:"message"`
+	Content json.RawMessage `json:"content"`
+}
+
 type header struct {
 	Authorization string
 	ClientID      string
 	ClientSecret  string
 }
 
-func (c *CIME) get(url string, header *header, queryParams map[string]string) (*APIResponseBody, error) {
-	r, err := http.NewRequest(http.MethodGet, url, nil)
+func (c *CIME) get(ctx context.Context, url string, header *header, queryParams map[string]string) (*APIResponseBody, error) {
+	r, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -56,14 +64,14 @@ func (c *CIME) get(url string, header *header, queryParams map[string]string) (*
 	return &data, nil
 }
 
-func (c *CIME) post(url string, body any, header *header, queryParams map[string]string) (*APIResponseBody, error) {
+func (c *CIME) post(ctx context.Context, url string, body any, header *header, queryParams map[string]string) (*APIResponseBody, error) {
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyBuffer := bytes.NewBuffer(bodyBytes)
 
-	r, err := http.NewRequest(http.MethodPost, url, bodyBuffer)
+	r, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bodyBuffer)
 	if err != nil {
 		return nil, err
 	}

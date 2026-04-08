@@ -11,6 +11,7 @@ import (
 
 var (
 	ErrTokenNotFound = fmt.Errorf("해당하는 토큰을 찾을 수 없습니다")
+	ErrTokenExpired  = fmt.Errorf("토큰이 만료되었습니다")
 )
 
 // RefreshToken 구조체는 Refresh Token의 정보를 담고 있는 구조체입니다.
@@ -76,7 +77,11 @@ func (s *FileRefreshTokenStorage) GetToken(ctx context.Context, channelID string
 	return nil, ErrTokenNotFound
 }
 
-func (s *FileRefreshTokenStorage) getTokens(_ context.Context) (map[string]RefreshToken, error) {
+func (s *FileRefreshTokenStorage) getTokens(ctx context.Context) (map[string]RefreshToken, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	rawBytes, err := os.ReadFile(s.filename)
 	if err != nil {
 		return nil, err
@@ -128,6 +133,10 @@ func NewInMemoryAccessTokenStorage() *InMemoryAccessTokenStorage {
 
 // SaveToken은 Access Token을 메모리에 저장합니다.
 func (s *InMemoryAccessTokenStorage) SaveToken(ctx context.Context, channelID string, newToken AccessToken) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -138,10 +147,18 @@ func (s *InMemoryAccessTokenStorage) SaveToken(ctx context.Context, channelID st
 
 // GetToken은 Access Token을 가져옵니다.
 func (s *InMemoryAccessTokenStorage) GetToken(ctx context.Context, channelID string) (*AccessToken, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
+
 	s.mu.RLock()
 	defer s.mu.RLock()
 
 	if token, ok := s.tokens[channelID]; ok {
+		if token.Expired() {
+			return nil, ErrTokenExpired
+		}
+
 		return &token, nil
 	}
 

@@ -3,6 +3,9 @@ package cimego
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"strconv"
+	"time"
 )
 
 // Channel은 채널에 대한 정보를 담고 있는 구조체입니다.
@@ -28,7 +31,7 @@ func (c *CIME) Channels(ctx context.Context, channelIDs []string) ([]Channel, er
 		channelIDsStr += "," + channelID
 	}
 
-	resp, err := c.get(EndpointChannels, &header{
+	resp, err := c.get(ctx, EndpointChannels, &header{
 		ClientID:     c.ClientID,
 		ClientSecret: c.ClientSecret,
 	}, map[string]string{"channelIds": channelIDsStr})
@@ -43,4 +46,54 @@ func (c *CIME) Channels(ctx context.Context, channelIDs []string) ([]Channel, er
 	}
 
 	return channels, nil
+}
+
+// ChannelFollower는 해당 채널의 팔로워의 정보를 담고 있는 구조체입니다.
+type ChannelFollower struct {
+	ChannelID     string    `json:"channelId"`
+	ChannelName   string    `json:"channelName"`
+	ChannelHandle string    `json:"channelHandle"`
+	CreatedDate   time.Time `json:"createdDate"`
+}
+
+// ChannelFollowers는 해당 채널의 팔로워 목록을 가져옵니다.
+// 이는 Access Token을 사용하며, 해당 Access Token은 READ:CHANNEL 스코프가 필요합니다.
+func (c *CIME) ChannelFollowers(ctx context.Context, channelID string, page, size int) ([]ChannelFollower, error) {
+	if page < 0 {
+		page = 0
+	}
+
+	if size <= 0 || size > 20 {
+		size = 20
+	}
+
+	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	if err != nil {
+		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
+			err = c.Refresh(ctx, channelID)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return nil, err
+	}
+
+	resp, err := c.get(ctx, EndpointChannelFollowers, &header{
+		Authorization: token.AccessToken,
+	}, map[string]string{
+		"page": strconv.Itoa(page),
+		"size": strconv.Itoa(size),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var followers []ChannelFollower
+	err = json.Unmarshal(resp.Content, &followers)
+	if err != nil {
+		return nil, err
+	}
+
+	return followers, nil
 }
