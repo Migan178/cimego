@@ -24,6 +24,14 @@ type APIResponseBody struct {
 	Content json.RawMessage `json:"content"`
 }
 
+// APIResponseContent는 APIResponseBody의 Content 필드에 들어갈 타입(인증 관련 제외)에서 쓰이는 구조체입니다.
+type APIResponseContent[T any] struct {
+	Data T `json:"data"`
+	Page *struct {
+		Next *string `json:"next"`
+	} `json:"page"`
+}
+
 type header struct {
 	Authorization string
 	ClientID      string
