@@ -13,13 +13,12 @@ var (
 
 // Token 구조체는 Refresh Token의 정보를 담고 있는 구조체입니다.
 type Token struct {
-	AccessToken  string `json:"-"`
 	RefreshToken string `json:"refresh_token"`
 	TokenType    string `json:"token_type"`
 	Scope        string `json:"scope"`
 }
 
-// RefreshTokenStorage는 ci.me에서 발급 받은 Token을 저장하기 위한 저장소입니다.
+// RefreshTokenStorage는 ci.me에서 발급 받은 Refresh Token을 저장하기 위한 저장소입니다.
 type RefreshTokenStorage interface {
 	// SaveToken은 Refresh Token을 저장하는 메서드입니다.
 	SaveToken(ctx context.Context, userID string, newToken Token) error
@@ -44,7 +43,7 @@ func NewFileRefreshTokenStorage(filename string) *FileRefreshTokenStorage {
 	}
 }
 
-// SaveToken은 Token을 저장하는 메서드입니다.
+// SaveToken은 Refresh Token을 저장하는 메서드입니다.
 func (s *FileRefreshTokenStorage) SaveToken(ctx context.Context, channelID string, newToken Token) error {
 	tokens, err := s.getTokens(ctx)
 	if err != nil {
@@ -61,7 +60,7 @@ func (s *FileRefreshTokenStorage) SaveToken(ctx context.Context, channelID strin
 	return os.WriteFile(s.filename, []byte(rawBytes), 0777)
 }
 
-// GetToken은 Token을 가져오는 메서드입니다.
+// GetToken은 Refresh Token을 가져오는 메서드입니다.
 func (s *FileRefreshTokenStorage) GetToken(ctx context.Context, channelID string) (*Token, error) {
 	tokens, err := s.getTokens(ctx)
 	if err != nil {

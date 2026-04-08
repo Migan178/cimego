@@ -55,8 +55,9 @@ func (c *CIME) Authorize(ctx context.Context, authorizeCode string) error {
 		return err
 	}
 
-	return c.TokenStorage.SaveToken(ctx, me.ChannelID, Token{
-		AccessToken:  data.AccessToken,
+	c.AccessTokens.Store(me.ChannelID, data.AccessToken)
+
+	return c.RefreshTokens.SaveToken(ctx, me.ChannelID, Token{
 		RefreshToken: data.RefreshToken,
 		TokenType:    data.TokenType,
 		Scope:        data.Scope,
@@ -65,7 +66,7 @@ func (c *CIME) Authorize(ctx context.Context, authorizeCode string) error {
 
 // Refresh는 channelID에 연결된 Access Token이 만료되었을 때 해당 토큰을 새로 발급 받습니다.
 func (c *CIME) Refresh(ctx context.Context, channelID string) error {
-	oldToken, err := c.TokenStorage.GetToken(ctx, channelID)
+	oldToken, err := c.RefreshTokens.GetToken(ctx, channelID)
 	if err != nil {
 		return err
 	}
@@ -88,8 +89,9 @@ func (c *CIME) Refresh(ctx context.Context, channelID string) error {
 		return err
 	}
 
-	return c.TokenStorage.SaveToken(ctx, channelID, Token{
-		AccessToken:  data.AccessToken,
+	c.AccessTokens.Store(channelID, data.AccessToken)
+
+	return c.RefreshTokens.SaveToken(ctx, channelID, Token{
 		RefreshToken: data.RefreshToken,
 		TokenType:    data.TokenType,
 		Scope:        data.Scope,

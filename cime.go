@@ -4,14 +4,16 @@ package cimego
 import (
 	"fmt"
 	"net/http"
+	"sync"
 )
 
 // CIME는 ci.me API에 접근하기 위한 구조체입니다.
 type CIME struct {
-	TokenStorage RefreshTokenStorage
-	ClientID     string
-	Secret       string
-	apiClient    *http.Client
+	RefreshTokens RefreshTokenStorage
+	AccessTokens  sync.Map
+	ClientID      string
+	Secret        string
+	apiClient     *http.Client
 }
 
 // CIMEOptions는 CIME 구조체를 생성할 때 넘겨줄 설정입니다.
@@ -44,10 +46,10 @@ func New(clientID, secret string, opts *CIMEOptions) (*CIME, error) {
 	}
 
 	cime := &CIME{
-		TokenStorage: tokenStorage,
-		ClientID:     clientID,
-		Secret:       secret,
-		apiClient:    apiClient,
+		RefreshTokens: tokenStorage,
+		ClientID:      clientID,
+		Secret:        secret,
+		apiClient:     apiClient,
 	}
 
 	return cime, nil
