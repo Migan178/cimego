@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 )
 
 var (
@@ -21,13 +22,14 @@ type header struct {
 	ClientSecret  string
 }
 
-func (c *CIME) get(url string, header *header) (*APIResponseBody, error) {
+func (c *CIME) get(url string, header *header, queryParams map[string]string) (*APIResponseBody, error) {
 	r, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	addHeader(&r.Header, header)
+	addHeader(r.Header, header)
+	addQueryParams(r.URL.Query(), queryParams)
 
 	resp, err := c.apiClient.Do(r)
 	if err != nil {
@@ -54,7 +56,7 @@ func (c *CIME) get(url string, header *header) (*APIResponseBody, error) {
 	return &data, nil
 }
 
-func (c *CIME) post(url string, body any, header *header) (*APIResponseBody, error) {
+func (c *CIME) post(url string, body any, header *header, queryParams map[string]string) (*APIResponseBody, error) {
 	bodyBytes, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
@@ -66,7 +68,8 @@ func (c *CIME) post(url string, body any, header *header) (*APIResponseBody, err
 		return nil, err
 	}
 
-	addHeader(&r.Header, header)
+	addHeader(r.Header, header)
+	addQueryParams(r.URL.Query(), queryParams)
 
 	resp, err := c.apiClient.Do(r)
 	if err != nil {
@@ -109,7 +112,7 @@ func returnErr(data APIResponseBody) error {
 	}
 }
 
-func addHeader(h *http.Header, data *header) {
+func addHeader(h http.Header, data *header) {
 	h.Add("Content-Type", "application/json")
 
 	if data != nil {
@@ -124,5 +127,15 @@ func addHeader(h *http.Header, data *header) {
 		if data.ClientSecret != "" {
 			h.Add("Client-Secret", data.ClientSecret)
 		}
+	}
+}
+
+func addQueryParams(q url.Values, queryParams map[string]string) {
+	if queryParams == nil {
+		return
+	}
+
+	for k, v := range queryParams {
+		q.Add(k, v)
 	}
 }

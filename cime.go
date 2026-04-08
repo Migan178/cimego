@@ -11,7 +11,7 @@ type CIME struct {
 	RefreshTokens RefreshTokenStorage
 	AccessTokens  AccessTokenStorage
 	ClientID      string
-	Secret        string
+	ClientSecret  string
 	apiClient     *http.Client
 }
 
@@ -54,7 +54,7 @@ func New(clientID, secret string, opts *CIMEOptions) (*CIME, error) {
 		RefreshTokens: refreshTokens,
 		AccessTokens:  accessTokens,
 		ClientID:      clientID,
-		Secret:        secret,
+		ClientSecret:  secret,
 		apiClient:     apiClient,
 	}
 

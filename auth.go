@@ -36,11 +36,11 @@ func (c *CIME) Authorize(ctx context.Context, authorizeCode string) error {
 	payload := AuthorizationPayload{
 		GrantType:    GrantTypeAuthorizationCode,
 		ClientID:     c.ClientID,
-		ClientSecret: c.Secret,
+		ClientSecret: c.ClientSecret,
 		Code:         authorizeCode,
 	}
 
-	resp, err := c.post(EndpointAuthorization, payload, nil)
+	resp, err := c.post(EndpointAuthorization, payload, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -83,11 +83,11 @@ func (c *CIME) Refresh(ctx context.Context, channelID string) error {
 	payload := AuthorizationPayload{
 		GrantType:    GrantTypeRefreshToken,
 		ClientID:     c.ClientID,
-		ClientSecret: c.Secret,
+		ClientSecret: c.ClientSecret,
 		RefreshToken: oldToken.RefreshToken,
 	}
 
-	resp, err := c.post(EndpointAuthorization, payload, nil)
+	resp, err := c.post(EndpointAuthorization, payload, nil, nil)
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ type User struct {
 
 // Me는 AccessToken에 연결된 사용자의 채널 정보를 가져옵니다.
 func (c *CIME) Me(ctx context.Context, accessToken string) (*User, error) {
-	resp, err := c.get(EndpointMe, &header{Authorization: accessToken})
+	resp, err := c.get(EndpointMe, &header{Authorization: accessToken}, nil)
 	if err != nil {
 		return nil, err
 	}
