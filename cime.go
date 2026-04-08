@@ -4,13 +4,12 @@ package cimego
 import (
 	"fmt"
 	"net/http"
-	"sync"
 )
 
 // CIME는 ci.me API에 접근하기 위한 구조체입니다.
 type CIME struct {
 	RefreshTokens RefreshTokenStorage
-	AccessTokens  sync.Map
+	AccessTokens  AccessTokenStorage
 	ClientID      string
 	Secret        string
 	apiClient     *http.Client
@@ -18,8 +17,9 @@ type CIME struct {
 
 // CIMEOptions는 CIME 구조체를 생성할 때 넘겨줄 설정입니다.
 type CIMEOptions struct {
-	TokenStorage RefreshTokenStorage
-	APIClient    *http.Client
+	RefreshTokenStorage RefreshTokenStorage
+	AccessTokenStorage  AccessTokenStorage
+	APIClient           *http.Client
 }
 
 // New는 새로운 CIME 구조체의 인스턴스를 생성합니다.
@@ -33,20 +33,26 @@ func New(clientID, secret string, opts *CIMEOptions) (*CIME, error) {
 	}
 
 	var apiClient = &http.Client{}
-	var tokenStorage RefreshTokenStorage = NewFileRefreshTokenStorage("")
+	var accessTokens AccessTokenStorage = NewInMemoryAccessTokenStorage()
+	var refreshTokens RefreshTokenStorage = NewFileRefreshTokenStorage("")
 
 	if opts != nil {
 		if opts.APIClient != nil {
 			apiClient = opts.APIClient
 		}
 
-		if opts.TokenStorage != nil {
-			tokenStorage = opts.TokenStorage
+		if opts.RefreshTokenStorage != nil {
+			refreshTokens = opts.RefreshTokenStorage
+		}
+
+		if opts.AccessTokenStorage != nil {
+			accessTokens = opts.AccessTokenStorage
 		}
 	}
 
 	cime := &CIME{
-		RefreshTokens: tokenStorage,
+		RefreshTokens: refreshTokens,
+		AccessTokens:  accessTokens,
 		ClientID:      clientID,
 		Secret:        secret,
 		apiClient:     apiClient,

@@ -3,6 +3,7 @@ package cimego
 import (
 	"context"
 	"encoding/json"
+	"time"
 )
 
 // GrantType은 토큰을 얻을 방식을 선택합니다.
@@ -55,9 +56,17 @@ func (c *CIME) Authorize(ctx context.Context, authorizeCode string) error {
 		return err
 	}
 
-	c.AccessTokens.Store(me.ChannelID, data.AccessToken)
+	err = c.AccessTokens.SaveToken(ctx, me.ChannelID, AccessToken{
+		AccessToken: data.AccessToken,
+		ExpiresAt:   time.Now().Add(time.Duration(data.ExpiresIn)*time.Second - 5*time.Minute),
+		TokenType:   data.TokenType,
+		Scope:       data.Scope,
+	})
+	if err != nil {
+		return err
+	}
 
-	return c.RefreshTokens.SaveToken(ctx, me.ChannelID, Token{
+	return c.RefreshTokens.SaveToken(ctx, me.ChannelID, RefreshToken{
 		RefreshToken: data.RefreshToken,
 		TokenType:    data.TokenType,
 		Scope:        data.Scope,
@@ -89,9 +98,17 @@ func (c *CIME) Refresh(ctx context.Context, channelID string) error {
 		return err
 	}
 
-	c.AccessTokens.Store(channelID, data.AccessToken)
+	err = c.AccessTokens.SaveToken(ctx, channelID, AccessToken{
+		AccessToken: data.AccessToken,
+		ExpiresAt:   time.Now().Add(time.Duration(data.ExpiresIn)*time.Second - 5*time.Minute),
+		TokenType:   data.TokenType,
+		Scope:       data.Scope,
+	})
+	if err != nil {
+		return err
+	}
 
-	return c.RefreshTokens.SaveToken(ctx, channelID, Token{
+	return c.RefreshTokens.SaveToken(ctx, channelID, RefreshToken{
 		RefreshToken: data.RefreshToken,
 		TokenType:    data.TokenType,
 		Scope:        data.Scope,
