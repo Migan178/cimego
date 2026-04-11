@@ -3,6 +3,7 @@ package cimego
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -83,7 +84,7 @@ func (c *CIME) lives(ctx context.Context, size int, next string) ([]Live, *strin
 		queryParams["next"] = next
 	}
 
-	resp, err := c.get(ctx, ENdpointLives, &header{
+	resp, err := c.get(ctx, EndpointLives, &header{
 		ClientID:     c.ClientID,
 		ClientSecret: c.ClientSecret,
 	}, queryParams)
@@ -98,4 +99,40 @@ func (c *CIME) lives(ctx context.Context, size int, next string) ([]Live, *strin
 	}
 
 	return data.Data, data.Page.Next, nil
+}
+
+// LiveSetting은 해당 방송의 설정을 담고 있는 구조체입니다.
+type LiveSetting struct {
+	DefaultLiveTitle string `json:"defaultLiveTitle"`
+	// 일단 타입이 object | null로만 되어 있어서 임시로 map으로 설정해둠.
+	Category map[string]string `json:"category"`
+	Tags     []string          `json:"tags"`
+}
+
+// LiveSetting은 해당 방송의 설정을 가져옵니다.
+func (c *CIME) LiveSetting(ctx context.Context, channelID string) (*LiveSetting, error) {
+	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	if err != nil {
+		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
+			token, err = c.Refresh(ctx, channelID)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	resp, err := c.get(ctx, EndpointLivesSetting, &header{
+		Authorization: token.AccessToken,
+	}, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var content APIResponseContent[LiveSetting]
+	err = json.Unmarshal(resp.Content, &content)
+	if err != nil {
+		return nil, err
+	}
+
+	return &content.Data, nil
 }
