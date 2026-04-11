@@ -3,7 +3,6 @@ package cimego
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -130,4 +129,28 @@ func (c *CIME) LiveSetting(ctx context.Context, channelID string) (*LiveSetting,
 	}
 
 	return &content.Data, nil
+}
+
+// LiveSettingUpdate는 라이브의 설정을 업데이트 하는 구조체입니다.
+type LiveSettingUpdate struct {
+	DefaultLiveTitle *string   `json:"defaultLiveTitle,omitempty"`
+	Category         *string   `json:"category,omitempty"`
+	Tags             *[]string `json:"tags,omitempty"`
+}
+
+// UpdateLiveSetting은 해당 라이브의 설정을 일부 업데이트 합니다.
+func (c *CIME) UpdateLiveSetting(ctx context.Context, channelID string, data *LiveSettingUpdate) error {
+	token, err := c.GetToken(ctx, channelID)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.patch(ctx, EndpointLivesSetting, data, &header{
+		Authorization: token.AccessToken,
+	}, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
