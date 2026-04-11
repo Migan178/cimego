@@ -3,6 +3,7 @@ package cimego
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"time"
 )
 
@@ -78,6 +79,23 @@ func (c *CIME) Authorize(ctx context.Context, authorizeCode string) (*AccessToke
 	}
 
 	return &accessToken, nil
+}
+
+// GetToken은 Access Token을 가져오고, 만약 만료 되었거나 없다면, 리프레시를 하고 Access Token을 반환합니다.
+func (c *CIME) GetToken(ctx context.Context, channelID string) (*AccessToken, error) {
+	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	if err != nil {
+		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
+			token, err = c.Refresh(ctx, channelID)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, err
+		}
+	}
+
+	return token, nil
 }
 
 // Refresh는 channelID에 연결된 Access Token이 만료되었을 때 해당 토큰을 새로 발급 받습니다.

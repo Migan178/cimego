@@ -3,7 +3,6 @@ package cimego
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"strconv"
 	"time"
 )
@@ -57,15 +56,8 @@ type ChannelFollower struct {
 
 // ChannelFollowers는 해당 채널의 팔로워 목록을 가져옵니다.
 func (c *CIME) ChannelFollowers(ctx context.Context, channelID string, page, size int) ([]ChannelFollower, error) {
-	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	token, err := c.GetToken(ctx, channelID)
 	if err != nil {
-		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
-			token, err = c.Refresh(ctx, channelID)
-			if err != nil {
-				return nil, err
-			}
-		}
-
 		return nil, err
 	}
 
@@ -108,15 +100,8 @@ type ChannelSubscriber struct {
 
 // ChannelSubscribers는 채널의 구독자 목록을 가져옵니다.
 func (c *CIME) ChannelSubscribers(ctx context.Context, channelID string, page, size int, sort ChannelSubscriberSort) ([]ChannelSubscriber, error) {
-	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	token, err := c.GetToken(ctx, channelID)
 	if err != nil {
-		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
-			token, err = c.Refresh(ctx, channelID)
-			if err != nil {
-				return nil, err
-			}
-		}
-
 		return nil, err
 	}
 
@@ -161,15 +146,8 @@ type ChannelManager struct {
 
 // ChannelManagers는 채널의 관리자 목록을 가져옵니다.
 func (c *CIME) ChannelManagers(ctx context.Context, channelID string) ([]ChannelManager, error) {
-	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	token, err := c.GetToken(ctx, channelID)
 	if err != nil {
-		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
-			token, err = c.Refresh(ctx, channelID)
-			if err != nil {
-				return nil, err
-			}
-		}
-
 		return nil, err
 	}
 

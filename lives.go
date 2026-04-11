@@ -111,14 +111,9 @@ type LiveSetting struct {
 
 // LiveSetting은 해당 방송의 설정을 가져옵니다.
 func (c *CIME) LiveSetting(ctx context.Context, channelID string) (*LiveSetting, error) {
-	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	token, err := c.GetToken(ctx, channelID)
 	if err != nil {
-		if errors.Is(err, ErrTokenNotFound) || errors.Is(err, ErrTokenExpired) {
-			token, err = c.Refresh(ctx, channelID)
-			if err != nil {
-				return nil, err
-			}
-		}
+		return nil, err
 	}
 
 	resp, err := c.get(ctx, EndpointLivesSetting, &header{
