@@ -79,13 +79,13 @@ func (c *CIME) ChannelFollowers(ctx context.Context, channelID string, page, siz
 		return nil, err
 	}
 
-	var data APIResponseContent[[]ChannelFollower]
-	err = json.Unmarshal(resp.Content, &data)
+	var content APIResponseContent[[]ChannelFollower]
+	err = json.Unmarshal(resp.Content, &content)
 	if err != nil {
 		return nil, err
 	}
 
-	return data.Data, nil
+	return content.Data, nil
 }
 
 // ChannelSubscriber는 채널의 구독자를 가져올 때 정렬 방식을 선택하는 타입입니다.
@@ -131,13 +131,13 @@ func (c *CIME) ChannelSubscribers(ctx context.Context, channelID string, page, s
 		return nil, err
 	}
 
-	var data APIResponseContent[[]ChannelSubscriber]
-	err = json.Unmarshal(resp.Content, &data)
+	var content APIResponseContent[[]ChannelSubscriber]
+	err = json.Unmarshal(resp.Content, &content)
 	if err != nil {
 		return nil, err
 	}
 
-	return data.Data, nil
+	return content.Data, nil
 }
 
 // ManagerRole은 채널의 관리자가 어떠한 역할인지에 대한 타입입니다.
@@ -180,11 +180,11 @@ func (c *CIME) ChannelManagers(ctx context.Context, channelID string) ([]Channel
 		return nil, err
 	}
 
-	var data APIResponseContent[[]ChannelManager]
-	err = json.Unmarshal(resp.Content, &data)
+	var content APIResponseContent[[]ChannelManager]
+	err = json.Unmarshal(resp.Content, &content)
 	if err != nil {
 		return nil, err
 	}
 
-	return data.Data, nil
+	return content.Data, nil
 }
