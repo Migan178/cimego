@@ -46,11 +46,11 @@ func (c *CIME) ChatSettings(ctx context.Context, channelID string) (*ChatSetting
 
 // ChatSettingsUpdate는 채팅의 설정을 업데이트 하는 구조체입니다.
 type ChatSettingsUpdate struct {
-	ChatEmojiMode               *bool             `json:"chatEmojiMode"`
-	ChatSlowModeSec             *int              `json:"chatSlowModeSec"`
-	ChatAllowedGroup            *ChatAllowedGroup `json:"chatAllowedGroup"`
-	MinFollowerMinute           *int              `json:"minFollowerMinute"`
-	FollowerSubscriberChatAllow *bool             `json:"followerSubscriberChatAllow"`
+	ChatEmojiMode               *bool             `json:"chatEmojiMode,omitempty"`
+	ChatSlowModeSec             *int              `json:"chatSlowModeSec,omitempty"`
+	ChatAllowedGroup            *ChatAllowedGroup `json:"chatAllowedGroup,omitempty"`
+	MinFollowerMinute           *int              `json:"minFollowerMinute,omitempty"`
+	FollowerSubscriberChatAllow *bool             `json:"followerSubscriberChatAllow,omitempty"`
 }
 
 // UpdateChatSettings는 해당 채널의 채팅 설정을 업데이트합니다.
