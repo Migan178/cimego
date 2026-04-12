@@ -154,3 +154,28 @@ func (c *CIME) UpdateLiveSetting(ctx context.Context, channelID string, data *Li
 
 	return nil
 }
+
+// StreamKey는 해당 방송의 스트림키를 가져옵니다.
+func (c *CIME) StreamKey(ctx context.Context, channelID string) (string, error) {
+	token, err := c.GetToken(ctx, channelID)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := c.get(ctx, EndpointStreamKey, &header{
+		Authorization: token.AccessToken,
+	}, nil)
+	if err != nil {
+		return "", err
+	}
+
+	var content APIResponseContent[struct {
+		StreamKey string `json:"streamKey"`
+	}]
+	err = json.Unmarshal(resp.Content, &content)
+	if err != nil {
+		return "", err
+	}
+
+	return content.Data.StreamKey, nil
+}

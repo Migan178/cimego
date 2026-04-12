@@ -16,4 +16,7 @@ const (
 
 	EndpointLives        = APIOpen + "/lives"
 	EndpointLivesSetting = EndpointLives + "/setting"
+
+	EndpointStreams   = APIOpen + "/streams"
+	EndpointStreamKey = EndpointStreams + "/key"
 )
