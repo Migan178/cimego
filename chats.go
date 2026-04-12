@@ -35,13 +35,13 @@ func (c *CIME) ChatSettings(ctx context.Context, channelID string) (*ChatSetting
 		return nil, err
 	}
 
-	var content APIResponseContent[ChatSettings]
+	var content ChatSettings
 	err = json.Unmarshal(resp.Content, &content)
 	if err != nil {
 		return nil, err
 	}
 
-	return &content.Data, nil
+	return &content, nil
 }
 
 // ChatSettingsUpdate는 채팅의 설정을 업데이트 하는 구조체입니다.
@@ -95,15 +95,15 @@ func (c *CIME) SendChat(ctx context.Context, channelID string, senderType ChatSe
 		return "", err
 	}
 
-	var content APIResponseContent[struct {
+	var content struct {
 		ID string `json:"messageId"`
-	}]
+	}
 	err = json.Unmarshal(resp.Content, &content)
 	if err != nil {
 		return "", err
 	}
 
-	return content.Data.ID, nil
+	return content.ID, nil
 }
 
 // SetChatNotice는 채팅에 공지사항을 등록합니다.

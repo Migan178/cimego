@@ -100,16 +100,16 @@ func (c *CIME) lives(ctx context.Context, size int, next string) ([]Live, *strin
 	return data.Data, data.Page.Next, nil
 }
 
-// LiveSetting은 해당 방송의 설정을 담고 있는 구조체입니다.
-type LiveSetting struct {
+// LiveSettings는 해당 방송의 설정을 담고 있는 구조체입니다.
+type LiveSettings struct {
 	DefaultLiveTitle string `json:"defaultLiveTitle"`
 	// 일단 타입이 object | null로만 되어 있어서 임시로 map으로 설정해둠.
 	Category map[string]string `json:"category"`
 	Tags     []string          `json:"tags"`
 }
 
-// LiveSetting은 해당 방송의 설정을 가져옵니다.
-func (c *CIME) LiveSetting(ctx context.Context, channelID string) (*LiveSetting, error) {
+// LiveSettings는 해당 방송의 설정을 가져옵니다.
+func (c *CIME) LiveSettings(ctx context.Context, channelID string) (*LiveSettings, error) {
 	token, err := c.GetToken(ctx, channelID)
 	if err != nil {
 		return nil, err
@@ -122,13 +122,13 @@ func (c *CIME) LiveSetting(ctx context.Context, channelID string) (*LiveSetting,
 		return nil, err
 	}
 
-	var content APIResponseContent[LiveSetting]
+	var content LiveSettings
 	err = json.Unmarshal(resp.Content, &content)
 	if err != nil {
 		return nil, err
 	}
 
-	return &content.Data, nil
+	return &content, nil
 }
 
 // LiveSettingUpdate는 라이브의 설정을 업데이트 하는 구조체입니다.
@@ -169,15 +169,15 @@ func (c *CIME) StreamKey(ctx context.Context, channelID string) (string, error) 
 		return "", err
 	}
 
-	var content APIResponseContent[struct {
+	var content struct {
 		StreamKey string `json:"streamKey"`
-	}]
+	}
 	err = json.Unmarshal(resp.Content, &content)
 	if err != nil {
 		return "", err
 	}
 
-	return content.Data.StreamKey, nil
+	return content.StreamKey, nil
 }
 
 type LiveStatus struct {
@@ -194,11 +194,11 @@ func (c *CIME) LiveStatus(ctx context.Context, channelID string) (*LiveStatus, e
 		return nil, err
 	}
 
-	var content APIResponseContent[LiveStatus]
+	var content LiveStatus
 	err = json.Unmarshal(resp.Content, &content)
 	if err != nil {
 		return nil, err
 	}
 
-	return &content.Data, nil
+	return &content, nil
 }
