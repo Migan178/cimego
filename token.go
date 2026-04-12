@@ -84,7 +84,12 @@ func (s *FileRefreshTokenStorage) getTokens(ctx context.Context) (map[string]Ref
 
 	rawBytes, err := os.ReadFile(s.filename)
 	if err != nil {
-		return nil, err
+		err = os.WriteFile(s.filename, []byte("{}"), 0777)
+		if err != nil {
+			return nil, err
+		}
+
+		return s.getTokens(ctx)
 	}
 
 	var tokens = make(map[string]RefreshToken)
