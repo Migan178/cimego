@@ -8,41 +8,6 @@ import (
 	"time"
 )
 
-var (
-	ErrLiveCursorIsEnded = fmt.Errorf("더 이상 다음으로 넘어갈 수 없음")
-)
-
-// LivesCursor는 커서 기반으로 방송 목록을 조작하는 구조체입니다.
-type LivesCursor struct {
-	data []Live
-	cime *CIME
-	size int
-	next *string
-}
-
-// Next는 다음 커서로 이동합니다.
-func (d *LivesCursor) Next(ctx context.Context) (*LivesCursor, error) {
-	if d.next == nil {
-		return nil, ErrLiveCursorIsEnded
-	}
-
-	lives, next, err := d.cime.lives(ctx, d.size, *d.next)
-	if err != nil {
-		return nil, err
-	}
-
-	d.data = lives
-	d.next = next
-	return d, nil
-}
-
-// Data는 해당 커서의 데이터들을 반환합니다.
-func (d *LivesCursor) Data() []Live {
-	dataCopy := make([]Live, len(d.data))
-	copy(dataCopy, d.data)
-	return dataCopy
-}
-
 // Live는 방송에 대한 정보들을 담고 있는 구조체입니다.
 type Live struct {
 	LiveID              string     `json:"liveId"`

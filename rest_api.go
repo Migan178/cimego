@@ -199,6 +199,46 @@ func (c *CIME) put(ctx context.Context, url string, body any, header *header, qu
 	return &data, nil
 }
 
+func (c *CIME) delete(ctx context.Context, url string, body any, header *header, queryParams map[string]string) (*APIResponseBody, error) {
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyBuffer := bytes.NewBuffer(bodyBytes)
+
+	r, err := http.NewRequestWithContext(ctx, http.MethodDelete, url, bodyBuffer)
+	if err != nil {
+		return nil, err
+	}
+
+	addHeader(r.Header, header)
+	addQueryParams(r.URL.Query(), queryParams)
+
+	resp, err := c.apiClient.Do(r)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, returnErr(respBody)
+	}
+
+	var data APIResponseBody
+	err = json.Unmarshal(respBody, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	return &data, nil
+}
+
 func returnErr(body []byte) error {
 	var data APIErrorResponseBody
 	err := json.Unmarshal(body, &data)
