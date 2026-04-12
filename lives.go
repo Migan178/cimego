@@ -179,3 +179,26 @@ func (c *CIME) StreamKey(ctx context.Context, channelID string) (string, error) 
 
 	return content.Data.StreamKey, nil
 }
+
+type LiveStatus struct {
+	IsLive   bool       `json:"isLive"`
+	Title    *string    `json:"title"`
+	OpenedAt *time.Time `json:"openedAt"`
+}
+
+// LiveStatus는 해당 채널의 방송 여부를 확인합니다.
+// 해당 요청은 인증이 필요없습니다.
+func (c *CIME) LiveStatus(ctx context.Context, channelID string) (*LiveStatus, error) {
+	resp, err := c.get(ctx, fmt.Sprintf("%s/%s/%s/live-status", APIBaseURL, APIVersion, channelID), nil, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var content APIResponseContent[LiveStatus]
+	err = json.Unmarshal(resp.Content, &content)
+	if err != nil {
+		return nil, err
+	}
+
+	return &content.Data, nil
+}
