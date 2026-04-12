@@ -2,10 +2,10 @@ package cimego
 
 const (
 	APIVersion = "v1"
-	APIBaseURL = "https://ci.me/api/openapi/"
+	APIBaseURL = "https://ci.me/api/openapi"
 	APIOpen    = APIBaseURL + "/open/" + APIVersion
 
-	EndpointAuth  = APIBaseURL + "/auth/" + APIBaseURL
+	EndpointAuth  = APIBaseURL + "/auth/" + APIVersion
 	EndpointToken = EndpointAuth + "/token"
 	EndpointMe    = APIOpen + "/users/me"
 

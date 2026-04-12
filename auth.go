@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"time"
 )
 
@@ -28,7 +29,7 @@ type token struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 	TokenType    string `json:"tokenType"`
-	ExpiresIn    int    `json:"expiresIn"`
+	ExpiresIn    string `json:"expiresIn"`
 	Scope        string `json:"scope"`
 }
 
@@ -57,9 +58,14 @@ func (c *CIME) Authorize(ctx context.Context, authorizeCode string) (*AccessToke
 		return nil, err
 	}
 
+	expiresIn, err := strconv.Atoi(data.ExpiresIn)
+	if err != nil {
+		return nil, err
+	}
+
 	accessToken := AccessToken{
 		AccessToken: data.AccessToken,
-		ExpiresAt:   time.Now().Add(time.Duration(data.ExpiresIn)*time.Second - 5*time.Minute),
+		ExpiresAt:   time.Now().Add(time.Duration(expiresIn)*time.Second - 5*time.Minute),
 		TokenType:   data.TokenType,
 		Scope:       data.Scope,
 	}
@@ -123,9 +129,14 @@ func (c *CIME) Refresh(ctx context.Context, channelID string) (*AccessToken, err
 		return nil, err
 	}
 
+	expiresIn, err := strconv.Atoi(data.ExpiresIn)
+	if err != nil {
+		return nil, err
+	}
+
 	accessToken := AccessToken{
 		AccessToken: data.AccessToken,
-		ExpiresAt:   time.Now().Add(time.Duration(data.ExpiresIn)*time.Second - 5*time.Minute),
+		ExpiresAt:   time.Now().Add(time.Duration(expiresIn)*time.Second - 5*time.Minute),
 		TokenType:   data.TokenType,
 		Scope:       data.Scope,
 	}

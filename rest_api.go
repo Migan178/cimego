@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,6 +23,12 @@ type APIResponseBody struct {
 	Code    int             `json:"code"`
 	Message *string         `json:"message"`
 	Content json.RawMessage `json:"content"`
+}
+
+type APIErrorResponseBody struct {
+	Message    json.RawMessage `json:"message"`
+	Error      string          `json:"error"`
+	StatusCode int             `json:"statusCode"`
 }
 
 // APIResponseContent는 APIResponseBody의 Content 필드에 들어갈 타입(인증 관련 제외)에서 쓰이는 구조체입니다.
@@ -54,19 +61,19 @@ func (c *CIME) get(ctx context.Context, url string, header *header, queryParams 
 
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
+	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		return nil, returnErr(respBody)
 	}
 
 	var data APIResponseBody
-	err = json.Unmarshal(body, &data)
+	err = json.Unmarshal(respBody, &data)
 	if err != nil {
 		return nil, err
-	}
-
-	if data.Code != 200 {
-		return nil, returnErr(data)
 	}
 
 	return &data, nil
@@ -99,14 +106,14 @@ func (c *CIME) post(ctx context.Context, url string, body any, header *header, q
 		return nil, err
 	}
 
+	if resp.StatusCode != 200 {
+		return nil, returnErr(respBody)
+	}
+
 	var data APIResponseBody
 	err = json.Unmarshal(respBody, &data)
 	if err != nil {
 		return nil, err
-	}
-
-	if data.Code != 200 {
-		return nil, returnErr(data)
 	}
 
 	return &data, nil
@@ -139,14 +146,14 @@ func (c *CIME) patch(ctx context.Context, url string, body any, header *header, 
 		return nil, err
 	}
 
+	if resp.StatusCode != 200 {
+		return nil, returnErr(respBody)
+	}
+
 	var data APIResponseBody
 	err = json.Unmarshal(respBody, &data)
 	if err != nil {
 		return nil, err
-	}
-
-	if data.Code != 200 {
-		return nil, returnErr(data)
 	}
 
 	return &data, nil
@@ -179,29 +186,55 @@ func (c *CIME) put(ctx context.Context, url string, body any, header *header, qu
 		return nil, err
 	}
 
+	if resp.StatusCode != 200 {
+		return nil, returnErr(respBody)
+	}
+
 	var data APIResponseBody
 	err = json.Unmarshal(respBody, &data)
 	if err != nil {
 		return nil, err
 	}
 
-	if data.Code != 200 {
-		return nil, returnErr(data)
-	}
-
 	return &data, nil
 }
 
-func returnErr(data APIResponseBody) error {
-	switch data.Code {
+func returnErr(body []byte) error {
+	var data APIErrorResponseBody
+	err := json.Unmarshal(body, &data)
+	if err != nil {
+		return err
+	}
+
+	var message string
+	err = json.Unmarshal(data.Message, &message)
+	if err != nil {
+		if _, ok := errors.AsType[*json.UnmarshalTypeError](err); ok {
+			messages := []string{}
+			err = json.Unmarshal(data.Message, &data)
+			if err != nil {
+				return err
+			}
+
+			for idx, msg := range messages {
+				if idx == 0 {
+					message = msg
+				}
+
+				message += "," + msg
+			}
+		}
+	}
+
+	switch data.StatusCode {
 	case 400:
-		return fmt.Errorf("%w: %s", ErrBadRequest, *data.Message)
+		return fmt.Errorf("%w: %s", ErrBadRequest, message)
 	case 401:
-		return fmt.Errorf("%w: %s", ErrUnauthorized, *data.Message)
+		return fmt.Errorf("%w: %s", ErrUnauthorized, message)
 	case 404:
-		return fmt.Errorf("%w: %s", ErrNotFound, *data.Message)
+		return fmt.Errorf("%w: %s", ErrNotFound, message)
 	case 500:
-		return fmt.Errorf("%w: %s", ErrInternalError, *data.Message)
+		return fmt.Errorf("%w: %s", ErrInternalError, message)
 
 	default:
 		return nil
