@@ -19,4 +19,9 @@ const (
 
 	EndpointStreams   = APIOpen + "/streams"
 	EndpointStreamKey = EndpointStreams + "/key"
+
+	EndpointChats        = APIOpen + "/chats"
+	EndpointChatSettings = EndpointChats + "/settings"
+	EndpointChatSend     = EndpointChats + "/send"
+	EndpointChatNotice   = EndpointChats + "/notice"
 )
