@@ -102,10 +102,9 @@ func (c *CIME) lives(ctx context.Context, size int, next string) ([]Live, *strin
 
 // LiveSettings는 해당 방송의 설정을 담고 있는 구조체입니다.
 type LiveSettings struct {
-	DefaultLiveTitle string `json:"defaultLiveTitle"`
-	// 일단 타입이 object | null로만 되어 있어서 임시로 map으로 설정해둠.
-	Category map[string]string `json:"category"`
-	Tags     []string          `json:"tags"`
+	DefaultLiveTitle string    `json:"defaultLiveTitle"`
+	Category         *Category `json:"category"`
+	Tags             []string  `json:"tags"`
 }
 
 // LiveSettings는 해당 방송의 설정을 가져옵니다.
@@ -131,15 +130,15 @@ func (c *CIME) LiveSettings(ctx context.Context, channelID string) (*LiveSetting
 	return &content, nil
 }
 
-// LiveSettingUpdate는 라이브의 설정을 업데이트 하는 구조체입니다.
-type LiveSettingUpdate struct {
+// LiveSettingsUpdate는 라이브의 설정을 업데이트 하는 구조체입니다.
+type LiveSettingsUpdate struct {
 	DefaultLiveTitle *string   `json:"defaultLiveTitle,omitempty"`
-	Category         *string   `json:"category,omitempty"`
+	CategoryID       *string   `json:"categoryId,omitempty"`
 	Tags             *[]string `json:"tags,omitempty"`
 }
 
-// UpdateLiveSetting은 해당 라이브의 설정을 일부 업데이트 합니다.
-func (c *CIME) UpdateLiveSetting(ctx context.Context, channelID string, data *LiveSettingUpdate) error {
+// UpdateLiveSettings은 해당 라이브의 설정을 일부 업데이트 합니다.
+func (c *CIME) UpdateLiveSettings(ctx context.Context, channelID string, data *LiveSettingsUpdate) error {
 	token, err := c.GetToken(ctx, channelID)
 	if err != nil {
 		return err

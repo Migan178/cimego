@@ -24,4 +24,7 @@ const (
 	EndpointChatSettings = EndpointChats + "/settings"
 	EndpointChatSend     = EndpointChats + "/send"
 	EndpointChatNotice   = EndpointChats + "/notice"
+
+	EndpointCategories     = APIOpen + "/categories"
+	EndpointCategorySearch = EndpointCategories + "/search"
 )
