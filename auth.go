@@ -180,3 +180,87 @@ func (c *CIME) Me(ctx context.Context, accessToken string) (*User, error) {
 
 	return &data, nil
 }
+
+type tokenRevokeBody struct {
+	ClientID     string `json:"clientId"`
+	ClientSecret string `json:"clientSecret"`
+	Token        string `json:"token"`
+	TokeTypeHint string `json:"tokenTypeHint"`
+}
+
+// RevokeTokens은 해당 채널의 Access Token과 Refresh Token을 취소합니다.
+func (c *CIME) RevokeTokens(ctx context.Context, channelID string) error {
+	err := c.RevokeAccessToken(ctx, channelID)
+	if err != nil {
+		return err
+	}
+
+	err = c.RevokeRefreshToken(ctx, channelID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RevokeAccessToken은 해당 채널의 Access Token을 취소합니다.
+func (c *CIME) RevokeAccessToken(ctx context.Context, channelID string) error {
+	token, err := c.RefreshTokens.GetToken(ctx, channelID)
+	if err != nil {
+		if errors.Is(err, ErrTokenNotFound) {
+			return nil
+		}
+
+		if errors.Is(err, ErrTokenExpired) {
+			err = c.AccessTokens.RemoveToken(ctx, channelID)
+		}
+
+		return err
+	}
+
+	_, err = c.post(ctx, EndpointTokenRevoke, tokenRevokeBody{
+		ClientID:     c.ClientID,
+		ClientSecret: c.ClientSecret,
+		Token:        token.RefreshToken,
+		TokeTypeHint: "refresh_token",
+	}, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	err = c.AccessTokens.RemoveToken(ctx, channelID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// RevokeRefreshToken은 해달 채널의 Refresh Token을 취소합니다.
+func (c *CIME) RevokeRefreshToken(ctx context.Context, channelID string) error {
+	token, err := c.AccessTokens.GetToken(ctx, channelID)
+	if err != nil {
+		if errors.Is(err, ErrTokenNotFound) {
+			return nil
+		}
+
+		return err
+	}
+
+	_, err = c.post(ctx, EndpointTokenRevoke, tokenRevokeBody{
+		ClientID:     c.ClientID,
+		ClientSecret: c.ClientSecret,
+		Token:        token.AccessToken,
+		TokeTypeHint: "refresh_token",
+	}, nil, nil)
+	if err != nil {
+		return err
+	}
+
+	err = c.RefreshTokens.RemoveToken(ctx, channelID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

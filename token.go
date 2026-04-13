@@ -23,10 +23,12 @@ type RefreshToken struct {
 
 // RefreshTokenStorage는 ci.me에서 발급 받은 Token을 저장하기 위한 인터페이스입니다.
 type RefreshTokenStorage interface {
-	// SaveToken은 Token을 저장하는 메서드입니다.
+	// SaveToken은 Refresh Token을 저장하는 메서드입니다.
 	SaveToken(ctx context.Context, channelID string, newToken RefreshToken) error
-	// GetToken은 Token을 가져오는 메서드입니다.
+	// GetToken은 Refresh Token을 가져오는 메서드입니다.
 	GetToken(ctx context.Context, channelID string) (*RefreshToken, error)
+	// RemoveToken은 Refresh Token을 삭제하는 메서드입니다.
+	RemoveToken(ctx context.Context, channelID string) error
 }
 
 // FileRefreshTokenStorage는 json 형식의 파일에 ci.me API의 Refresh Token을 저장하는 구조체입니다.
@@ -46,7 +48,7 @@ func NewFileRefreshTokenStorage(filename string) *FileRefreshTokenStorage {
 	}
 }
 
-// SaveToken은 Refresh Token을 저장하는 메서드입니다.
+// SaveToken은 Refresh Token을 저장합니다.
 func (s *FileRefreshTokenStorage) SaveToken(ctx context.Context, channelID string, newToken RefreshToken) error {
 	tokens, err := s.getTokens(ctx)
 	if err != nil {
@@ -63,7 +65,7 @@ func (s *FileRefreshTokenStorage) SaveToken(ctx context.Context, channelID strin
 	return os.WriteFile(s.filename, []byte(rawBytes), 0777)
 }
 
-// GetToken은 Refresh Token을 가져오는 메서드입니다.
+// GetToken은 Refresh Token을 가져옵니다.
 func (s *FileRefreshTokenStorage) GetToken(ctx context.Context, channelID string) (*RefreshToken, error) {
 	tokens, err := s.getTokens(ctx)
 	if err != nil {
@@ -75,6 +77,23 @@ func (s *FileRefreshTokenStorage) GetToken(ctx context.Context, channelID string
 	}
 
 	return nil, ErrTokenNotFound
+}
+
+// RemoveToken은 Refresh Token을 삭제합니다.
+func (s *FileRefreshTokenStorage) RemoveToken(ctx context.Context, channelID string) error {
+	tokens, err := s.getTokens(ctx)
+	if err != nil {
+		return err
+	}
+
+	delete(tokens, channelID)
+
+	rawBytes, err := json.Marshal(tokens)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(s.filename, []byte(rawBytes), 0777)
 }
 
 func (s *FileRefreshTokenStorage) getTokens(ctx context.Context) (map[string]RefreshToken, error) {
@@ -116,10 +135,12 @@ func (t *AccessToken) Expired() bool {
 
 // AccessTokenStorage는 ci.me의 Access Token들을 저장하기 위한 인터페이스입니다.
 type AccessTokenStorage interface {
-	// SaveToken은 Access Token을 저장합니다.
+	// SaveToken은 Access Token을 저장하는 메서드입니다.
 	SaveToken(ctx context.Context, channelID string, newToken AccessToken) error
-	// GetToken은 RefreshToken을 저장합니다
+	// GetToken은 Access Token을 가져오는 메서드입니다.
 	GetToken(ctx context.Context, channelID string) (*AccessToken, error)
+	// RemoveToken은 Access Token을 삭제하는 메서드입니다.
+	RemoveToken(ctx context.Context, channelID string) error
 }
 
 // InMemoryAccessTokenStorage는 Access Token을 메모리에 저장하는 구조체입니다.
@@ -168,4 +189,14 @@ func (s *InMemoryAccessTokenStorage) GetToken(ctx context.Context, channelID str
 	}
 
 	return nil, ErrTokenNotFound
+}
+
+// RemoveToken은 Access Token을 삭제합니다.
+func (s *InMemoryAccessTokenStorage) RemoveToken(ctx context.Context, channelID string) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+
+	delete(s.tokens, channelID)
+	return nil
 }

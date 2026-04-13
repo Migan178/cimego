@@ -5,9 +5,10 @@ const (
 	APIBaseURL = "https://ci.me/api/openapi"
 	APIOpen    = APIBaseURL + "/open/" + APIVersion
 
-	EndpointAuth  = APIBaseURL + "/auth/" + APIVersion
-	EndpointToken = EndpointAuth + "/token"
-	EndpointMe    = APIOpen + "/users/me"
+	EndpointAuth        = APIBaseURL + "/auth/" + APIVersion
+	EndpointToken       = EndpointAuth + "/token"
+	EndpointTokenRevoke = EndpointToken + "/revoke"
+	EndpointMe          = APIOpen + "/users/me"
 
 	EndpointChannels           = APIOpen + "/channels"
 	EndpointChannelFollowers   = EndpointChannels + "/followers"
