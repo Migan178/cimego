@@ -6,17 +6,30 @@ import (
 	"net/http"
 )
 
+type OnChatEventFunc func(c *CIME, e *ChatEvent)
+type OnDonationEventFunc func(c *CIME, e *DonationEvent)
+type OnSubscriptionEventFunc func(c *CIME, e *SubscriptionEvent)
+
 // CIME는 ci.me API에 접근하기 위한 구조체입니다.
 type CIME struct {
+	onChatEvent         OnChatEventFunc
+	onDonationEvent     OnDonationEventFunc
+	onSubscriptionEvent OnSubscriptionEventFunc
+
 	RefreshTokens RefreshTokenStorage
 	AccessTokens  AccessTokenStorage
 	ClientID      string
 	ClientSecret  string
 	apiClient     *http.Client
+	sessions      map[string]*session
 }
 
 // CIMEOptions는 CIME 구조체를 생성할 때 넘겨줄 설정입니다.
 type CIMEOptions struct {
+	OnChatEvent         OnChatEventFunc
+	OnDonationEvent     OnDonationEventFunc
+	OnSubscriptionEvent OnSubscriptionEventFunc
+
 	RefreshTokenStorage RefreshTokenStorage
 	AccessTokenStorage  AccessTokenStorage
 	APIClient           *http.Client
@@ -33,10 +46,31 @@ func New(clientID, secret string, opts *CIMEOptions) (*CIME, error) {
 	}
 
 	var apiClient = &http.Client{}
-	var accessTokens AccessTokenStorage = NewInMemoryAccessTokenStorage()
-	var refreshTokens RefreshTokenStorage = NewFileRefreshTokenStorage("")
+
+	var (
+		accessTokens  AccessTokenStorage  = NewInMemoryAccessTokenStorage()
+		refreshTokens RefreshTokenStorage = NewFileRefreshTokenStorage("")
+	)
+
+	var (
+		onChatEvent         OnChatEventFunc
+		onDonationEvent     OnDonationEventFunc
+		onSubscriptionEvent OnSubscriptionEventFunc
+	)
 
 	if opts != nil {
+		if opts.OnChatEvent != nil {
+			onChatEvent = opts.OnChatEvent
+		}
+
+		if opts.OnDonationEvent != nil {
+			onDonationEvent = opts.OnDonationEvent
+		}
+
+		if opts.OnSubscriptionEvent != nil {
+			onSubscriptionEvent = opts.OnSubscriptionEvent
+		}
+
 		if opts.APIClient != nil {
 			apiClient = opts.APIClient
 		}
@@ -51,6 +85,10 @@ func New(clientID, secret string, opts *CIMEOptions) (*CIME, error) {
 	}
 
 	cime := &CIME{
+		onChatEvent:         onChatEvent,
+		onDonationEvent:     onDonationEvent,
+		onSubscriptionEvent: onSubscriptionEvent,
+
 		RefreshTokens: refreshTokens,
 		AccessTokens:  accessTokens,
 		ClientID:      clientID,

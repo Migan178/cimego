@@ -29,4 +29,12 @@ const (
 
 	EndpointCategories     = APIOpen + "/categories"
 	EndpointCategorySearch = EndpointCategories + "/search"
+
+	EndpointSessions                  = APIOpen + "/sessions"
+	EndpointSessionsAuth              = EndpointSessions + "/auth"
+	EndpointSessionAuthClient         = EndpointSessionsAuth + "/client"
+	EndpointSessionEvents             = EndpointSessions + "/events"
+	EndpointSessionEventsChat         = EndpointSessionEvents + "/chat"
+	EndpointSessionEventsDonation     = EndpointSessionEvents + "/donation"
+	EndpointSessionEventsSubscription = EndpointSessionEvents + "/subscription"
 )

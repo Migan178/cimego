@@ -18,13 +18,14 @@ var (
 	ErrInternalError = fmt.Errorf("내부 오류")
 )
 
-// ApiResponseBody는 ci.me의 API에서 반환되는 반환 구조체입니다.
+// ApiResponseBody는 ci.me의 API에서 반환되는 응답 구조체입니다.
 type APIResponseBody struct {
 	Code    int             `json:"code"`
 	Message *string         `json:"message"`
 	Content json.RawMessage `json:"content"`
 }
 
+// APIErrorResponseBody는 ci.me의 API에서 반환 되는 응답의 에러 구조체입니다.
 type APIErrorResponseBody struct {
 	Message    json.RawMessage `json:"message"`
 	Error      string          `json:"error"`
@@ -108,6 +109,10 @@ func (c *CIME) post(ctx context.Context, url string, body any, header *header, q
 
 	if resp.StatusCode != 200 {
 		return nil, returnErr(respBody)
+	}
+
+	if len(respBody) == 0 {
+		return nil, nil
 	}
 
 	var data APIResponseBody
